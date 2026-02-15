@@ -28,6 +28,9 @@ export const ImageProvider = ({ children }) => {
   const [customBackgroundImage, setCustomBackgroundImage] = useState(null);
   const [outputFormat, setOutputFormat] = useState('PNG');
 
+  // Preview settings
+  const [viewMode, setViewMode] = useState('processed'); // 'original', 'processed', 'compare'
+
   // Zoom & Pan
   const [zoomLevel, setZoomLevel] = useState(ZOOM_CONFIG.default);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -81,6 +84,10 @@ export const ImageProvider = ({ children }) => {
     setZoomLevel,
     panOffset,
     setPanOffset,
+
+    // Preview
+    viewMode,
+    setViewMode,
 
     // WebGPU
     isWebGPUActive,

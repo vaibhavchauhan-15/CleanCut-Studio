@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useImageContext } from '../contexts/useImageContext';
-import ViewModeToggle from './editor/ViewModeToggle';
 
 const PreviewSplit = () => {
   const {
@@ -15,8 +14,8 @@ const PreviewSplit = () => {
     panOffset,
     setPanOffset,
     imageDimensions,
+    viewMode,
   } = useImageContext();
-  const [viewMode, setViewMode] = useState('processed'); // 'original', 'processed', 'compare'
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
@@ -194,10 +193,7 @@ const PreviewSplit = () => {
   const aspectRatioStyle = { aspectRatio: `${aspectRatio}` };
 
   return (
-    <div className="w-full max-w-[500px] space-y-4">
-      {/* View Mode Toggle Buttons */}
-      <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
-
+    <div className="w-full max-w-[500px]">
       <motion.div 
         ref={containerRef}
         className={`relative w-full bg-slate-800/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl border border-slate-700 group select-none ${zoomLevel > 100 ? 'cursor-grab active:cursor-grabbing' : ''}`}
