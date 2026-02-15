@@ -81,7 +81,7 @@ const CropControls = ({
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="text-sm font-medium text-slate-300">Rotation</label>
-              <span className="text-xs text-accent">{rotation}°</span>
+              <span className="text-xs text-accent font-semibold">{rotation}°</span>
             </div>
             <input 
               type="range" 
@@ -90,26 +90,26 @@ const CropControls = ({
               step="1"
               value={rotation}
               onChange={(e) => setRotation(parseInt(e.target.value))}
-              className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-accent mb-2" 
+              className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-accent mb-2" 
             />
             <div className="flex gap-2">
               <button
                 onClick={() => quickRotate90('left')}
-                className="flex-1 flex items-center justify-center gap-1 py-2 bg-primary/30 hover:bg-primary/50 rounded-lg transition-colors text-xs font-medium text-slate-300"
+                className="flex-1 flex items-center justify-center gap-1 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors text-xs font-medium text-slate-300"
               >
                 <span className="material-icons-round text-sm">rotate_left</span>
                 90° Left
               </button>
               <button
                 onClick={() => quickRotate90('right')}
-                className="flex-1 flex items-center justify-center gap-1 py-2 bg-primary/30 hover:bg-primary/50 rounded-lg transition-colors text-xs font-medium text-slate-300"
+                className="flex-1 flex items-center justify-center gap-1 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors text-xs font-medium text-slate-300"
               >
                 <span className="material-icons-round text-sm">rotate_right</span>
                 90° Right
               </button>
               <button
                 onClick={() => setRotation(0)}
-                className="px-3 py-2 bg-primary/30 hover:bg-primary/50 rounded-lg transition-colors"
+                className="px-3 py-2 bg-slate-700/50 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
                 title="Reset rotation"
               >
                 <span className="material-icons-round text-sm text-slate-300">restart_alt</span>
@@ -119,7 +119,7 @@ const CropControls = ({
 
           {/* Standard Ratios */}
           <div>
-            <label className="text-xs text-slate-500 mb-2 block font-semibold">Standard Ratios</label>
+            <label className="text-xs text-slate-300 mb-2 block font-semibold">Standard Ratios</label>
             <div className="grid grid-cols-4 gap-2">
               {standardRatios.map(ratio => (
                 <button
@@ -127,8 +127,8 @@ const CropControls = ({
                   onClick={() => handleRatioSelect(ratio.id, ratio.ratio)}
                   className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
                     cropAspectRatio === ratio.id
-                      ? 'bg-primary border-accent'
-                      : 'hover:bg-primary/30 border-transparent'
+                      ? 'bg-accent/20 border-accent'
+                      : 'hover:bg-slate-700/50 border-slate-700'
                   }`}
                   title={ratio.desc}
                 >
@@ -148,8 +148,8 @@ const CropControls = ({
           </div>
 
           {/* Info */}
-          <div className="text-xs text-slate-500 bg-primary/20 p-2 rounded-lg flex items-start gap-2">
-            <span className="material-icons-round text-sm">info</span>
+          <div className="text-xs text-slate-300 bg-slate-700/30 border border-slate-700 p-2 rounded-lg flex items-start gap-2">
+            <span className="material-icons-round text-sm text-slate-400">info</span>
             <span>Drag crop handles or corners to adjust. Use rotation for fine-tuning.</span>
           </div>
 

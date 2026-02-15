@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
-const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transparent', customColor = '#FFFFFF', customBackgroundImage = null, cropEnabled = false, cropArea = { x: 10, y: 10, width: 80, height: 80 }, setCropArea = () => {}, cropAspectRatio = 'original', rotation = 0, zoomLevel = 100, setZoomLevel = () => {}, panOffset = { x: 0, y: 0 }, setPanOffset = () => {}, imageDimensions = { width: 1, height: 1 } }) => {
+const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transparent', customColor = '#FFFFFF', customBackgroundImage = null, zoomLevel = 100, setZoomLevel = () => {}, panOffset = { x: 0, y: 0 }, setPanOffset = () => {}, imageDimensions = { width: 1, height: 1 } }) => {
   const [viewMode, setViewMode] = useState('processed'); // 'original', 'processed', 'compare'
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [cropDragState, setCropDragState] = useState(null); // { type: 'move' | 'resize', handle: 'nw' | 'ne' | 'sw' | 'se' | null }
   const containerRef = useRef(null);
   const imageContainerRef = useRef(null);
   const rafRef = useRef(null);
@@ -150,140 +149,6 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
     };
   }, []);
 
-  // Crop drag handlers
-  const handleCropMouseDown = useCallback((e, dragType, handle = null) => {
-    if (!cropEnabled) return;
-    e.stopPropagation();
-    setCropDragState({ type: dragType, handle, startX: e.clientX, startY: e.clientY, initialCrop: { ...cropArea } });
-  }, [cropEnabled, cropArea]);
-
-  const handleCropMouseMove = useCallback((e) => {
-    if (!cropDragState || !containerRef.current) return;
-    
-    const rect = containerRef.current.getBoundingClientRect();
-    const deltaX = ((e.clientX - cropDragState.startX) / rect.width) * 100;
-    const deltaY = ((e.clientY - cropDragState.startY) / rect.height) * 100;
-    
-    const { initialCrop, type, handle } = cropDragState;
-    let newCrop = { ...initialCrop };
-
-    // Get aspect ratio for locking
-    const getAspectRatio = () => {
-      if (cropAspectRatio === 'freeform') return null;
-      const ratioMap = {
-        '1:1': 1,
-        '4:5': 0.8,
-        '16:9': 16/9,
-        '9:16': 9/16,
-        '4:3': 4/3,
-        '3:2': 3/2,
-        '21:9': 21/9
-      };
-      return ratioMap[cropAspectRatio] || null;
-    };
-
-    const aspectRatio = getAspectRatio();
-
-    if (type === 'move') {
-      // Move the entire crop area
-      newCrop.x = Math.max(0, Math.min(100 - initialCrop.width, initialCrop.x + deltaX));
-      newCrop.y = Math.max(0, Math.min(100 - initialCrop.height, initialCrop.y + deltaY));
-    } else if (type === 'resize') {
-      // Resize based on which handle is being dragged
-      if (handle === 'nw') {
-        const newX = Math.max(0, Math.min(initialCrop.x + initialCrop.width - 5, initialCrop.x + deltaX));
-        const newY = Math.max(0, Math.min(initialCrop.y + initialCrop.height - 5, initialCrop.y + deltaY));
-        newCrop.width = initialCrop.width + (initialCrop.x - newX);
-        newCrop.height = initialCrop.height + (initialCrop.y - newY);
-        newCrop.x = newX;
-        newCrop.y = newY;
-        
-        if (aspectRatio) {
-          const avgDelta = (newCrop.width / initialCrop.width + newCrop.height / initialCrop.height) / 2;
-          newCrop.width = initialCrop.width * avgDelta;
-          newCrop.height = newCrop.width / aspectRatio;
-          newCrop.x = initialCrop.x + initialCrop.width - newCrop.width;
-          newCrop.y = initialCrop.y + initialCrop.height - newCrop.height;
-        }
-      } else if (handle === 'ne') {
-        const newY = Math.max(0, Math.min(initialCrop.y + initialCrop.height - 5, initialCrop.y + deltaY));
-        newCrop.width = Math.max(5, Math.min(100 - initialCrop.x, initialCrop.width + deltaX));
-        newCrop.height = initialCrop.height + (initialCrop.y - newY);
-        newCrop.y = newY;
-        
-        if (aspectRatio) {
-          newCrop.height = newCrop.width / aspectRatio;
-          newCrop.y = initialCrop.y + initialCrop.height - newCrop.height;
-        }
-      } else if (handle === 'sw') {
-        const newX = Math.max(0, Math.min(initialCrop.x + initialCrop.width - 5, initialCrop.x + deltaX));
-        newCrop.width = initialCrop.width + (initialCrop.x - newX);
-        newCrop.height = Math.max(5, Math.min(100 - initialCrop.y, initialCrop.height + deltaY));
-        newCrop.x = newX;
-        
-        if (aspectRatio) {
-          newCrop.height = newCrop.width / aspectRatio;
-        }
-      } else if (handle === 'se') {
-        newCrop.width = Math.max(5, Math.min(100 - initialCrop.x, initialCrop.width + deltaX));
-        newCrop.height = Math.max(5, Math.min(100 - initialCrop.y, initialCrop.height + deltaY));
-        
-        if (aspectRatio) {
-          newCrop.height = newCrop.width / aspectRatio;
-        }
-      }
-      
-      // Edge handles
-      if (handle === 'n') {
-        const newY = Math.max(0, Math.min(initialCrop.y + initialCrop.height - 5, initialCrop.y + deltaY));
-        newCrop.height = initialCrop.height + (initialCrop.y - newY);
-        newCrop.y = newY;
-        if (aspectRatio) {
-          newCrop.width = newCrop.height * aspectRatio;
-          newCrop.x = initialCrop.x + (initialCrop.width - newCrop.width) / 2;
-        }
-      } else if (handle === 's') {
-        newCrop.height = Math.max(5, Math.min(100 - initialCrop.y, initialCrop.height + deltaY));
-        if (aspectRatio) {
-          newCrop.width = newCrop.height * aspectRatio;
-          newCrop.x = initialCrop.x + (initialCrop.width - newCrop.width) / 2;
-        }
-      } else if (handle === 'w') {
-        const newX = Math.max(0, Math.min(initialCrop.x + initialCrop.width - 5, initialCrop.x + deltaX));
-        newCrop.width = initialCrop.width + (initialCrop.x - newX);
-        newCrop.x = newX;
-        if (aspectRatio) {
-          newCrop.height = newCrop.width / aspectRatio;
-          newCrop.y = initialCrop.y + (initialCrop.height - newCrop.height) / 2;
-        }
-      } else if (handle === 'e') {
-        newCrop.width = Math.max(5, Math.min(100 - initialCrop.x, initialCrop.width + deltaX));
-        if (aspectRatio) {
-          newCrop.height = newCrop.width / aspectRatio;
-          newCrop.y = initialCrop.y + (initialCrop.height - newCrop.height) / 2;
-        }
-      }
-    }
-
-    setCropArea(newCrop);
-  }, [cropDragState, setCropArea, cropAspectRatio]);
-
-  const handleCropMouseUp = useCallback(() => {
-    setCropDragState(null);
-  }, []);
-
-  // Add crop drag listeners
-  useEffect(() => {
-    if (cropDragState) {
-      window.addEventListener('mousemove', handleCropMouseMove);
-      window.addEventListener('mouseup', handleCropMouseUp);
-      return () => {
-        window.removeEventListener('mousemove', handleCropMouseMove);
-        window.removeEventListener('mouseup', handleCropMouseUp);
-      };
-    }
-  }, [cropDragState, handleCropMouseMove, handleCropMouseUp]);
-
   // Render background based on selection
   const renderBackground = () => {
     if (backgroundColor === 'transparent') {
@@ -315,15 +180,15 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
   const aspectRatioStyle = { aspectRatio: `${aspectRatio}` };
 
   return (
-    <div className="w-full max-w-4xl space-y-4">
+    <div className="w-full max-w-[500px] space-y-4">
       {/* View Mode Toggle Buttons */}
-      <div className="flex gap-3 justify-center bg-surface-light/30 backdrop-blur-sm p-2 rounded-xl border border-white/10">
+      <div className="flex gap-3 justify-center bg-slate-800/80 backdrop-blur-sm p-2 rounded-xl border border-slate-700 shadow-xl">
         <button
           onClick={() => setViewMode('original')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             viewMode === 'original'
-              ? 'bg-accent text-background-dark shadow-lg shadow-accent/30'
-              : 'bg-surface-light/50 text-text-secondary hover:bg-surface-light hover:text-text-primary'
+              ? 'bg-accent text-background-dark shadow-lg'
+              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
           }`}
         >
           <span className="material-icons-round text-lg">image</span>
@@ -333,8 +198,8 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
           onClick={() => setViewMode('processed')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             viewMode === 'processed'
-              ? 'bg-accent text-background-dark shadow-lg shadow-accent/30'
-              : 'bg-surface-light/50 text-text-secondary hover:bg-surface-light hover:text-text-primary'
+              ? 'bg-accent text-background-dark shadow-lg'
+              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
           }`}
         >
           <span className="material-icons-round text-lg">auto_fix_high</span>
@@ -344,8 +209,8 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
           onClick={() => setViewMode('compare')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             viewMode === 'compare'
-              ? 'bg-accent text-background-dark shadow-lg shadow-accent/30'
-              : 'bg-surface-light/50 text-text-secondary hover:bg-surface-light hover:text-text-primary'
+              ? 'bg-accent text-background-dark shadow-lg'
+              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
           }`}
         >
           <span className="material-icons-round text-lg">compare</span>
@@ -355,7 +220,7 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
 
       <motion.div 
         ref={containerRef}
-        className={`relative w-full rounded-xl overflow-hidden shadow-2xl shadow-black/50 group select-none ${zoomLevel > 100 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        className={`relative w-full bg-slate-800/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-2xl border border-slate-700 group select-none ${zoomLevel > 100 ? 'cursor-grab active:cursor-grabbing' : ''}`}
         style={aspectRatioStyle}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -377,7 +242,7 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
         ref={imageContainerRef}
         className="absolute inset-0 transition-transform duration-150 ease-out"
         style={{
-          transform: `scale(${zoomLevel / 100}) translate(${panOffset.x / (zoomLevel / 100)}px, ${panOffset.y / (zoomLevel / 100)}px) rotate(${rotation}deg)`,
+          transform: `scale(${zoomLevel / 100}) translate(${panOffset.x / (zoomLevel / 100)}px, ${panOffset.y / (zoomLevel / 100)}px)`,
           pointerEvents: zoomLevel > 100 && isPanning ? 'none' : 'auto'
         }}
       >
@@ -456,119 +321,7 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
         </div>
       )}
 
-      {/* Crop Overlay */}
-      {cropEnabled && (
-        <>
-          {/* Dark overlay outside crop area */}
-          <div className="absolute inset-0 z-30 pointer-events-none">
-            {/* Top */}
-            <div 
-              className="absolute top-0 left-0 right-0 bg-black/60"
-              style={{ height: `${cropArea.y}%` }}
-            />
-            {/* Bottom */}
-            <div 
-              className="absolute bottom-0 left-0 right-0 bg-black/60"
-              style={{ height: `${100 - cropArea.y - cropArea.height}%` }}
-            />
-            {/* Left */}
-            <div 
-              className="absolute bg-black/60"
-              style={{ 
-                top: `${cropArea.y}%`,
-                height: `${cropArea.height}%`,
-                left: 0,
-                width: `${cropArea.x}%`
-              }}
-            />
-            {/* Right */}
-            <div 
-              className="absolute bg-black/60"
-              style={{ 
-                top: `${cropArea.y}%`,
-                height: `${cropArea.height}%`,
-                right: 0,
-                width: `${100 - cropArea.x - cropArea.width}%`
-              }}
-            />
-          </div>
-
-          {/* Crop boundary box */}
-          <div 
-            className="absolute z-40 border-2 border-accent pointer-events-none"
-            style={{
-              left: `${cropArea.x}%`,
-              top: `${cropArea.y}%`,
-              width: `${cropArea.width}%`,
-              height: `${cropArea.height}%`
-            }}
-          >
-            {/* Grid lines */}
-            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 opacity-50 pointer-events-none">
-              <div className="border-r border-b border-white/30"></div>
-              <div className="border-r border-b border-white/30"></div>
-              <div className="border-b border-white/30"></div>
-              <div className="border-r border-b border-white/30"></div>
-              <div className="border-r border-b border-white/30"></div>
-              <div className="border-b border-white/30"></div>
-              <div className="border-r border-white/30"></div>
-              <div className="border-r border-white/30"></div>
-              <div className=""></div>
-            </div>
-
-            {/* Corner resize handles */}
-            <div 
-              className="absolute -top-1.5 -left-1.5 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-nwse-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'nw')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'nw')}
-            ></div>
-            <div 
-              className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-nesw-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'ne')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'ne')}
-            ></div>
-            <div 
-              className="absolute -bottom-1.5 -left-1.5 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-nesw-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'sw')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'sw')}
-            ></div>
-            <div 
-              className="absolute -bottom-1.5 -right-1.5 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-nwse-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'se')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'se')}
-            ></div>
-
-            {/* Edge handles */}
-            <div 
-              className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-ns-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'n')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'n')}
-            ></div>
-            <div 
-              className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-ns-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 's')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 's')}
-            ></div>
-            <div 
-              className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-ew-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'w')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'w')}
-            ></div>
-            <div 
-              className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-accent rounded-full border-2 border-white pointer-events-auto cursor-ew-resize z-10"
-              onMouseDown={(e) => handleCropMouseDown(e, 'resize', 'e')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'resize', 'e')}
-            ></div>
-            
-            {/* Central move handle */}
-            <div
-              className="absolute inset-0 cursor-move z-0"
-              onMouseDown={(e) => handleCropMouseDown(e, 'move')}
-              onTouchStart={(e) => handleCropMouseDown(e, 'move')}
-            ></div>
-          </div>
-        </>
-      )}      </div>
+      </div>
       {/* End of Zoomable Container */}
       
       {/* Labels - Only in Compare Mode */}

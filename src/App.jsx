@@ -17,43 +17,20 @@ function App() {
   const [processingStage, setProcessingStage] = useState('Loading Model');
   const [imageDimensions, setImageDimensions] = useState({ width: 1, height: 1 }); // Track original image dimensions
   
-  // Refine and export options
-  const [featherRadius, setFeatherRadius] = useState(1.2);
-  const [hairSmoothing, setHairSmoothing] = useState(true);
+  // Export options
   const [backgroundColor, setBackgroundColor] = useState('transparent');
   const [customColor, setCustomColor] = useState('#FFFFFF');
   const [customBackgroundImage, setCustomBackgroundImage] = useState(null);
   const [outputFormat, setOutputFormat] = useState('PNG');
   
-  // Crop options
-  const [cropEnabled, setCropEnabled] = useState(false);
-  const [cropAspectRatio, setCropAspectRatio] = useState('original'); // 'original', '1:1', '4:3', '16:9', '9:16', 'freeform'
-  const [cropArea, setCropArea] = useState({ x: 10, y: 10, width: 80, height: 80 }); // percentage-based
-  const [rotation, setRotation] = useState(0); // rotation angle in degrees
-  
   // Zoom & Pan options
-  const [zoomLevel, setZoomLevel] = useState(100);
+  const [zoomLevel, setZoomLevel] = useState(85);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
-  
-  // Panel visibility
-  const [isPanelVisible, setIsPanelVisible] = useState(false);
 
   // Check WebGPU support on mount
   useEffect(() => {
     checkWebGPUSupport();
   }, []);
-  
-  // Keyboard shortcut to toggle panel (C key)
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (view === 'editor' && e.key.toLowerCase() === 'c' && !e.ctrlKey && !e.metaKey) {
-        setIsPanelVisible(prev => !prev);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [view]);
 
   const checkWebGPUSupport = async () => {
     try {
@@ -88,7 +65,7 @@ function App() {
       // Use actual background removal with progress tracking
       const processedUrl = await processImageWithProgress(
         imageDataUrl,
-        (progress, stage) => {
+        (progress) => {
           // Map library progress to our progress stages
           if (progress < 30) {
             setProcessingStage('Loading Model');
@@ -138,57 +115,27 @@ function App() {
         img.src = processedImage;
       });
       
-      // Set canvas dimensions based on whether crop is enabled
-      let finalWidth = img.width;
-      let finalHeight = img.height;
-      let cropX = 0;
-      let cropY = 0;
-      let cropWidth = img.width;
-      let cropHeight = img.height;
-      
-      if (cropEnabled) {
-        // Calculate crop dimensions from percentages
-        cropX = (cropArea.x / 100) * img.width;
-        cropY = (cropArea.y / 100) * img.height;
-        cropWidth = (cropArea.width / 100) * img.width;
-        cropHeight = (cropArea.height / 100) * img.height;
-        
-        finalWidth = cropWidth;
-        finalHeight = cropHeight;
-      }
-      
-      // Set canvas to final dimensions (cropped if crop enabled)
-      canvas.width = Math.round(finalWidth);
-      canvas.height = Math.round(finalHeight);
-      
-      // Apply rotation if enabled (for future rotation feature)
-      const radians = rotation ? (rotation * Math.PI) / 180 : 0;
-      
-      if (radians !== 0) {
-        // Save context state and apply rotation
-        ctx.save();
-        ctx.translate(finalWidth / 2, finalHeight / 2);
-        ctx.rotate(radians);
-        ctx.translate(-finalWidth / 2, -finalHeight / 2);
-      }
+      // Set canvas to image dimensions
+      canvas.width = img.width;
+      canvas.height = img.height;
       
       // Apply background based on selection
       if (backgroundColor === 'transparent') {
         // Just draw the image with transparency
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+        ctx.drawImage(img, 0, 0);
       } else if (backgroundColor === 'solid') {
         // Fill with solid color first
         ctx.fillStyle = customColor;
-        ctx.fillRect(0, 0, finalWidth, finalHeight);
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+        ctx.fillRect(0, 0, img.width, img.height);
+        ctx.drawImage(img, 0, 0);
       } else if (backgroundColor === 'gradient') {
         // Apply gradient background
-        const gradient = ctx.createLinearGradient(0, 0, 0, finalHeight);
+        const gradient = ctx.createLinearGradient(0, 0, 0, img.height);
         gradient.addColorStop(0, '#667eea');
         gradient.addColorStop(1, '#764ba2');
         ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, finalWidth, finalHeight);
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+        ctx.fillRect(0, 0, img.width, img.height);
+        ctx.drawImage(img, 0, 0);
       } else if (backgroundColor === 'custom') {
         // Use custom uploaded image as background
         if (customBackgroundImage) {
@@ -199,9 +146,9 @@ function App() {
             customImg.src = customBackgroundImage;
           });
           // Draw custom image to fill canvas
-          ctx.drawImage(customImg, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+          ctx.drawImage(customImg, 0, 0, img.width, img.height);
         }
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+        ctx.drawImage(img, 0, 0);
       } else if (backgroundColor === 'blur') {
         // For blur, use original image as blurred background
         const originalImg = new Image();
@@ -213,16 +160,11 @@ function App() {
         
         // Draw original image blurred
         ctx.filter = 'blur(20px)';
-        ctx.drawImage(originalImg, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+        ctx.drawImage(originalImg, 0, 0, img.width, img.height);
         ctx.filter = 'none';
         
         // Draw processed image on top
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
-      }
-      
-      // Restore context state if rotation was applied
-      if (radians !== 0) {
-        ctx.restore();
+        ctx.drawImage(img, 0, 0);
       }
       
       // Convert to blob with selected format
@@ -249,11 +191,8 @@ function App() {
     setProcessedImage(null);
     setMaskData(null);
     setView('upload');
-    setZoomLevel(100);
+    setZoomLevel(85);
     setPanOffset({ x: 0, y: 0 });
-    setRotation(0);
-    setCropEnabled(false);
-    setCropArea({ x: 10, y: 10, width: 80, height: 80 });
   };
 
   const handleZoomIn = () => {
@@ -265,7 +204,7 @@ function App() {
   };
 
   const handleZoomReset = () => {
-    setZoomLevel(100);
+    setZoomLevel(85);
     setPanOffset({ x: 0, y: 0 });
   };
 
@@ -359,7 +298,7 @@ function App() {
                     </div>
                     <h4 className="text-xl font-bold mb-3">Zero Cost Forever</h4>
                     <p className="text-slate-400 leading-relaxed">
-                      No subscriptions, no credits, no watermarks. Since we don't pay for server compute, you don't pay for the service. Completely free.
+                      No subscriptions, no credits, no watermarks. Since we dont pay for server compute, you dont pay for the service. Completely free.
                     </p>
                   </motion.div>
                 </div>
@@ -369,20 +308,15 @@ function App() {
         )}
 
         {view === 'editor' && (
-          <div className="h-screen flex flex-col overflow-hidden pt-16">
-            <div className="flex-1 flex overflow-hidden relative">
-              <section className="flex-1 relative bg-neutral-900 overflow-y-auto flex flex-col items-center justify-start p-8 pt-12">
+          <div className="min-h-screen bg-neutral-900 flex flex-col pt-16">
+            <div className="flex-1 flex justify-center items-start gap-8 px-8 py-10 max-w-[1600px] mx-auto w-full">
+              <section className="flex-1 flex flex-col items-center justify-start space-y-6">
                 <PreviewSplit 
                   originalImage={originalImage} 
                   processedImage={processedImage}
                   backgroundColor={backgroundColor}
                   customColor={customColor}
                   customBackgroundImage={customBackgroundImage}
-                  cropEnabled={cropEnabled}
-                  cropArea={cropArea}
-                  setCropArea={setCropArea}
-                  cropAspectRatio={cropAspectRatio}
-                  rotation={rotation}
                   zoomLevel={zoomLevel}
                   setZoomLevel={setZoomLevel}
                   panOffset={panOffset}
@@ -391,86 +325,57 @@ function App() {
                 />
                 
                 {/* Canvas Zoom/Pan Controls */}
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-primary/40 backdrop-blur-xl border border-white/10 p-1.5 rounded-xl shadow-xl">
+                <div className="flex items-center gap-2 bg-slate-800/80 backdrop-blur-xl border border-slate-700 p-1.5 rounded-xl shadow-xl">
                   <button 
                     onClick={handleZoomOut}
-                    className="p-2 hover:bg-white/10 rounded-lg text-slate-300 transition-colors"
+                    className="p-2 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
                     disabled={zoomLevel <= 25}
                   >
                     <span className="material-icons-round text-xl">zoom_out</span>
                   </button>
-                  <span className="text-xs font-medium px-4 border-x border-white/10 text-slate-300 min-w-[48px] text-center">{zoomLevel}%</span>
+                  <span className="text-xs font-medium px-4 border-x border-slate-700 text-slate-300 min-w-[48px] text-center">{zoomLevel}%</span>
                   <button 
                     onClick={handleZoomIn}
-                    className="p-2 hover:bg-white/10 rounded-lg text-slate-300 transition-colors"
+                    className="p-2 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
                     disabled={zoomLevel >= 400}
                   >
                     <span className="material-icons-round text-xl">zoom_in</span>
                   </button>
-                  <div className="w-px h-6 bg-white/10 mx-1"></div>
+                  <div className="w-px h-6 bg-slate-700 mx-1"></div>
                   <button 
                     onClick={handleZoomReset}
-                    className="p-2 hover:bg-white/10 rounded-lg text-slate-300 transition-colors"
-                    title="Fit to screen"
+                    className="p-2 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors"
+                    title="Reset zoom"
                   >
                     <span className="material-icons-round text-xl">fit_screen</span>
                   </button>
                 </div>
-                
-                {/* Toggle Panel Button */}
-                <button 
-                  onClick={() => setIsPanelVisible(!isPanelVisible)}
-                  className="absolute top-6 right-6 p-3 bg-primary/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl hover:bg-primary/60 transition-all text-slate-300 z-10"
-                  title={isPanelVisible ? "Hide Controls (C)" : "Show Controls (C)"}
-                >
-                  <span className="material-icons-round text-xl">
-                    {isPanelVisible ? 'close_fullscreen' : 'open_in_full'}
-                  </span>
-                </button>
               </section>
 
-              {isPanelVisible && (
-                <motion.div
-                  initial={{ x: '100%' }}
-                  animate={{ x: 0 }}
-                  exit={{ x: '100%' }}
-                  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                >
-                  <DownloadPanel 
+              {/* Right Side Panel - Always Visible */}
+              <aside className="w-[380px] shrink-0">
+                <DownloadPanel 
                     processedImage={processedImage}
-                    featherRadius={featherRadius}
-                    setFeatherRadius={setFeatherRadius}
-                    hairSmoothing={hairSmoothing}
-                    setHairSmoothing={setHairSmoothing}
                     backgroundColor={backgroundColor}
                     setBackgroundColor={setBackgroundColor}
                     customColor={customColor}
                     setCustomColor={setCustomColor}
                     customBackgroundImage={customBackgroundImage}
                     setCustomBackgroundImage={setCustomBackgroundImage}
-                    cropEnabled={cropEnabled}
-                    setCropEnabled={setCropEnabled}
-                    cropAspectRatio={cropAspectRatio}
-                    setCropAspectRatio={setCropAspectRatio}
-                    cropArea={cropArea}
-                    setCropArea={setCropArea}
-                    rotation={rotation}
-                    setRotation={setRotation}
                     outputFormat={outputFormat}
                     setOutputFormat={setOutputFormat}
                     onDownload={handleDownload}
                     onBackToUpload={handleBackToUpload}
                   />
-                </motion.div>
-              )}
+              </aside>
             </div>
 
             {/* Bottom Action Bar */}
-            <footer className="h-20 border-t border-slate-800 bg-background-light dark:bg-background-dark flex items-center justify-between px-8 shrink-0">
+            <footer className="sticky bottom-0 h-16 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm flex items-center justify-between px-8 shadow-lg z-20">
               <div className="flex items-center">
                 <button 
                   onClick={handleBackToUpload}
-                  className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-white hover:bg-primary/20 rounded-lg transition-all font-medium"
+                  className="flex items-center gap-2 px-4 py-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg transition-all font-medium"
                 >
                   <span className="material-icons-round">arrow_back</span>
                   Back to Upload
@@ -479,7 +384,7 @@ function App() {
               <div className="flex items-center gap-4">
                 <button 
                   onClick={handleDownload}
-                  className="h-11 px-8 bg-accent hover:bg-amber-600 text-background-dark font-bold rounded-lg shadow-lg shadow-accent/10 flex items-center gap-3 transition-all"
+                  className="h-11 px-8 bg-accent hover:bg-amber-600 text-background-dark font-bold rounded-lg shadow-lg flex items-center gap-3 transition-all"
                 >
                   Download Result
                   <span className="material-icons-round">download</span>
