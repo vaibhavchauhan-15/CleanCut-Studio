@@ -5,20 +5,23 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['onnxruntime-web']
+    exclude: ['@imgly/background-removal']
   },
   server: {
+    // Enable cross-origin isolation for multi-threading and SharedArrayBuffer
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp'
-    }
+    },
+    // Enable CORS for external resources
+    cors: true
   },
   build: {
     target: 'esnext',
     rollupOptions: {
       output: {
         manualChunks: {
-          'onnx-runtime': ['onnxruntime-web']
+          'background-removal': ['@imgly/background-removal']
         }
       }
     }
