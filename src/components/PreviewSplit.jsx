@@ -1,7 +1,21 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useImageContext } from '../contexts/useImageContext';
+import ViewModeToggle from './editor/ViewModeToggle';
 
-const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transparent', customColor = '#FFFFFF', customBackgroundImage = null, zoomLevel = 100, setZoomLevel = () => {}, panOffset = { x: 0, y: 0 }, setPanOffset = () => {}, imageDimensions = { width: 1, height: 1 } }) => {
+const PreviewSplit = () => {
+  const {
+    originalImage,
+    processedImage,
+    backgroundColor,
+    customColor,
+    customBackgroundImage,
+    zoomLevel,
+    setZoomLevel,
+    panOffset,
+    setPanOffset,
+    imageDimensions,
+  } = useImageContext();
   const [viewMode, setViewMode] = useState('processed'); // 'original', 'processed', 'compare'
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -182,41 +196,7 @@ const PreviewSplit = ({ originalImage, processedImage, backgroundColor = 'transp
   return (
     <div className="w-full max-w-[500px] space-y-4">
       {/* View Mode Toggle Buttons */}
-      <div className="flex gap-3 justify-center bg-slate-800/80 backdrop-blur-sm p-2 rounded-xl border border-slate-700 shadow-xl">
-        <button
-          onClick={() => setViewMode('original')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-            viewMode === 'original'
-              ? 'bg-accent text-background-dark shadow-lg'
-              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
-          }`}
-        >
-          <span className="material-icons-round text-lg">image</span>
-          <span>Original</span>
-        </button>
-        <button
-          onClick={() => setViewMode('processed')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-            viewMode === 'processed'
-              ? 'bg-accent text-background-dark shadow-lg'
-              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
-          }`}
-        >
-          <span className="material-icons-round text-lg">auto_fix_high</span>
-          <span>Processed</span>
-        </button>
-        <button
-          onClick={() => setViewMode('compare')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-            viewMode === 'compare'
-              ? 'bg-accent text-background-dark shadow-lg'
-              : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
-          }`}
-        >
-          <span className="material-icons-round text-lg">compare</span>
-          <span>Compare</span>
-        </button>
-      </div>
+      <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
 
       <motion.div 
         ref={containerRef}

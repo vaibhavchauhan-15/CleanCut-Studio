@@ -1,8 +1,13 @@
 import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import { useImageUpload } from '../hooks/useImageUpload';
+import { useBackgroundRemoval } from '../hooks/useBackgroundRemoval';
+import { SAMPLE_IMAGES } from '../config/constants';
 
-const UploadCard = ({ onImageSelect }) => {
+const UploadCard = () => {
   const [isDragging, setIsDragging] = useState(false);
+  const { handleImageSelect } = useImageUpload();
+  const { processImage } = useBackgroundRemoval();
 
   const handleDragEnter = useCallback((e) => {
     e.preventDefault();
@@ -32,24 +37,13 @@ const UploadCard = ({ onImageSelect }) => {
     }
   }, []);
 
-  const handleFile = (file) => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file (PNG, JPG, WEBP)');
-      return;
+  const handleFile = async (file) => {
+    try {
+      const imageDataUrl = await handleImageSelect(file);
+      await processImage(imageDataUrl);
+    } catch (error) {
+      alert(error.message);
     }
-
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size must be less than 10MB');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onImageSelect(e.target.result);
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleFileInput = (e) => {
@@ -59,8 +53,13 @@ const UploadCard = ({ onImageSelect }) => {
     }
   };
 
-  const handleSampleClick = (sampleUrl) => {
-    onImageSelect(sampleUrl);
+  const handleSampleClick = async (sampleUrl) => {
+    try {
+      const imageDataUrl = await handleImageSelect(sampleUrl);
+      await processImage(imageDataUrl);
+    } catch (error) {
+      alert('Failed to process image: ' + error.message);
+    }
   };
 
   return (
@@ -151,36 +150,19 @@ const UploadCard = ({ onImageSelect }) => {
       >
         <p className="text-sm text-slate-500 mb-4 font-medium uppercase tracking-wider">No image? Try one of these:</p>
         <div className="flex gap-4">
-          <button 
-            onClick={() => handleSampleClick('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800')}
-            className="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2"
-          >
-            <img 
-              alt="Sample portrait" 
-              className="w-full h-full object-cover" 
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800" 
-            />
-          </button>
-          <button 
-            onClick={() => handleSampleClick('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800')}
-            className="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2"
-          >
-            <img 
-              alt="Sample product" 
-              className="w-full h-full object-cover" 
-              src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800" 
-            />
-          </button>
-          <button 
-            onClick={() => handleSampleClick('https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800')}
-            className="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2"
-          >
-            <img 
-              alt="Sample sneaker" 
-              className="w-full h-full object-cover" 
-              src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800" 
-            />
-          </button>
+          {SAMPLE_IMAGES.map((sample) => (
+            <button
+              key={sample.id}
+              onClick={() => handleSampleClick(sample.url)}
+              className="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2"
+            >
+              <img
+                alt={sample.alt}
+                className="w-full h-full object-cover"
+                src={sample.url}
+              />
+            </button>
+          ))}
         </div>
       </motion.div>
     </div>

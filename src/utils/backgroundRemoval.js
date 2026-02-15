@@ -4,6 +4,7 @@
  */
 
 import { removeBackground as imglyRemoveBackground } from '@imgly/background-removal';
+import { blobToDataURL, dataURLToBlob } from '../services/imageProcessingService';
 
 let isInitialized = false;
 
@@ -58,30 +59,6 @@ export const removeBackground = async (imageSource, options = {}, onProgress = n
     console.error('Background removal failed:', error);
     throw new Error(`Background removal failed: ${error.message}`);
   }
-};
-
-/**
- * Convert blob to data URL
- * @param {Blob} blob - Image blob
- * @returns {Promise<string>} Data URL
- */
-export const blobToDataURL = (blob) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
-/**
- * Convert data URL to blob
- * @param {string} dataURL - Data URL
- * @returns {Promise<Blob>} Image blob
- */
-export const dataURLToBlob = async (dataURL) => {
-  const response = await fetch(dataURL);
-  return response.blob();
 };
 
 /**
