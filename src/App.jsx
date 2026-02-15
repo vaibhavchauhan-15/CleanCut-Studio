@@ -34,11 +34,26 @@ function App() {
   // Zoom & Pan options
   const [zoomLevel, setZoomLevel] = useState(100);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  
+  // Panel visibility
+  const [isPanelVisible, setIsPanelVisible] = useState(false);
 
   // Check WebGPU support on mount
   useEffect(() => {
     checkWebGPUSupport();
   }, []);
+  
+  // Keyboard shortcut to toggle panel (C key)
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (view === 'editor' && e.key.toLowerCase() === 'c' && !e.ctrlKey && !e.metaKey) {
+        setIsPanelVisible(prev => !prev);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [view]);
 
   const checkWebGPUSupport = async () => {
     try {
@@ -355,7 +370,7 @@ function App() {
 
         {view === 'editor' && (
           <div className="h-screen flex flex-col overflow-hidden pt-16">
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden relative">
               <section className="flex-1 relative bg-neutral-900 overflow-y-auto flex flex-col items-center justify-start p-8 pt-12">
                 <PreviewSplit 
                   originalImage={originalImage} 
@@ -401,33 +416,53 @@ function App() {
                     <span className="material-icons-round text-xl">fit_screen</span>
                   </button>
                 </div>
+                
+                {/* Toggle Panel Button */}
+                <button 
+                  onClick={() => setIsPanelVisible(!isPanelVisible)}
+                  className="absolute top-6 right-6 p-3 bg-primary/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-xl hover:bg-primary/60 transition-all text-slate-300 z-10"
+                  title={isPanelVisible ? "Hide Controls (C)" : "Show Controls (C)"}
+                >
+                  <span className="material-icons-round text-xl">
+                    {isPanelVisible ? 'close_fullscreen' : 'open_in_full'}
+                  </span>
+                </button>
               </section>
 
-              <DownloadPanel 
-                processedImage={processedImage}
-                featherRadius={featherRadius}
-                setFeatherRadius={setFeatherRadius}
-                hairSmoothing={hairSmoothing}
-                setHairSmoothing={setHairSmoothing}
-                backgroundColor={backgroundColor}
-                setBackgroundColor={setBackgroundColor}
-                customColor={customColor}
-                setCustomColor={setCustomColor}
-                customBackgroundImage={customBackgroundImage}
-                setCustomBackgroundImage={setCustomBackgroundImage}
-                cropEnabled={cropEnabled}
-                setCropEnabled={setCropEnabled}
-                cropAspectRatio={cropAspectRatio}
-                setCropAspectRatio={setCropAspectRatio}
-                cropArea={cropArea}
-                setCropArea={setCropArea}
-                rotation={rotation}
-                setRotation={setRotation}
-                outputFormat={outputFormat}
-                setOutputFormat={setOutputFormat}
-                onDownload={handleDownload}
-                onBackToUpload={handleBackToUpload}
-              />
+              {isPanelVisible && (
+                <motion.div
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                >
+                  <DownloadPanel 
+                    processedImage={processedImage}
+                    featherRadius={featherRadius}
+                    setFeatherRadius={setFeatherRadius}
+                    hairSmoothing={hairSmoothing}
+                    setHairSmoothing={setHairSmoothing}
+                    backgroundColor={backgroundColor}
+                    setBackgroundColor={setBackgroundColor}
+                    customColor={customColor}
+                    setCustomColor={setCustomColor}
+                    customBackgroundImage={customBackgroundImage}
+                    setCustomBackgroundImage={setCustomBackgroundImage}
+                    cropEnabled={cropEnabled}
+                    setCropEnabled={setCropEnabled}
+                    cropAspectRatio={cropAspectRatio}
+                    setCropAspectRatio={setCropAspectRatio}
+                    cropArea={cropArea}
+                    setCropArea={setCropArea}
+                    rotation={rotation}
+                    setRotation={setRotation}
+                    outputFormat={outputFormat}
+                    setOutputFormat={setOutputFormat}
+                    onDownload={handleDownload}
+                    onBackToUpload={handleBackToUpload}
+                  />
+                </motion.div>
+              )}
             </div>
 
             {/* Bottom Action Bar */}
