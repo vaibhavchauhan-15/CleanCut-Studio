@@ -1,0 +1,484 @@
+📄 PRODUCT REQUIREMENT DOCUMENT
+CleanCut Studio
+
+AI Background Remover — 100% Browser-Based, Private, Open Source
+
+1️⃣ Product Overview
+Product Name
+
+CleanCut Studio
+
+Tagline
+
+“Remove Background in Seconds — 100% Private. Runs in Your Browser.”
+
+Category
+
+AI-powered Image Editing Tool (Client-Side Web Application)
+
+Core Differentiator
+
+Unlike competitors such as remove.bg and other online background remover tools:
+
+No image uploads
+
+No cloud processing
+
+No server storage
+
+No tracking
+
+Fully browser-based
+
+100% privacy guaranteed
+
+CleanCut Studio is positioned as:
+
+The first serious open-source background remover that runs entirely in your browser using WebGPU acceleration.
+
+2️⃣ Product Vision
+
+Build a high-quality AI background remover that:
+
+Runs 100% client-side
+
+Requires zero backend
+
+Guarantees user privacy
+
+Is fully open-source
+
+Delivers near-premium edge quality
+
+Is optimized for ecommerce and portrait photography
+
+Has SaaS-grade UI polish
+
+3️⃣ Target Audience
+Primary Users
+
+Ecommerce sellers (Amazon, Shopify, Flipkart)
+
+Freelancers
+
+Graphic designers
+
+Social media creators
+
+Content marketers
+
+Photographers
+
+Secondary Users
+
+Developers interested in client-side AI
+
+Privacy-conscious users
+
+Indie hackers
+
+4️⃣ SEO Strategy (Core Ranking Objective)
+Primary Keywords
+
+free background remover
+
+remove background online free
+
+remove background without upload
+
+background remover browser
+
+AI background remover
+
+background remover open source
+
+remove image background instantly
+
+remove bg no watermark
+
+private background remover
+
+Long-Tail Keywords
+
+remove background online without server
+
+privacy safe background remover
+
+client-side AI image editor
+
+browser-based AI background removal
+
+remove product background ecommerce
+
+free remove bg tool no signup
+
+On-Page SEO Structure
+Homepage H1:
+
+Remove Background Online Free — 100% Private AI Background Remover
+
+Supporting H2s:
+
+Remove Background Without Uploading Your Image
+
+Free AI Background Remover for Ecommerce
+
+Browser-Based Background Removal Tool
+
+Open Source Background Remover (No Watermark)
+
+SEO Enhancements
+
+Structured Data (SoftwareApplication schema)
+
+Optimized meta title and description
+
+Fast loading (Core Web Vitals optimized)
+
+WebP previews
+
+Static deployment (Cloudflare Pages)
+
+5️⃣ Technical Architecture
+Zero-Cost Stack
+Layer	Technology	Purpose
+Model	U²-Net (ONNX)	High-quality matting
+Runtime	ONNX Runtime Web	In-browser inference
+Acceleration	WebGPU (fallback WebGL)	Speed
+Processing	Web Workers	Prevent UI freeze
+Canvas	OffscreenCanvas	Fast manipulation
+Hosting	Cloudflare Pages	₹0 hosting
+
+Everything is static. No backend.
+
+6️⃣ AI Processing Pipeline
+
+Image Upload
+
+Resize (max 1024px long side)
+
+Normalize input tensor
+
+Run U²-Net inference
+
+Generate mask
+
+Mask thresholding
+
+Morphological smoothing
+
+1–2px Gaussian blur feather
+
+Edge contrast enhancement
+
+Manual refine support
+
+Composite on canvas
+
+Preview
+
+7️⃣ Core Features (Phase 1)
+7.1 Background Removal Engine
+
+U²-Net ONNX model
+
+WebGPU acceleration
+
+Transparent PNG export
+
+Feather slider
+
+Hair refinement toggle
+
+Mask contrast boost
+
+7.2 Upload Component
+Features
+
+Drag & drop
+
+Max 10MB
+
+Instant preview
+
+Client-side compression preview
+
+Mobile-friendly
+
+UI Elements
+
+UploadCard.jsx
+
+Animated hover glow
+
+Drop pulse animation
+
+7.3 Processing Screen
+
+Lottie AI scanning animation
+
+Fake intelligent progress breakdown:
+
+Model Loading %
+
+Inference %
+
+Mask Refining %
+
+Users trust visible progress.
+
+7.4 Result Preview
+
+Split comparison slider:
+
+Left: Original
+
+Right: Transparent background
+
+Implementation:
+
+CSS clip-path
+
+Range input
+
+Framer Motion fade-in
+
+Component:
+PreviewSplit.jsx
+
+7.5 Download Options
+
+Formats:
+
+PNG (transparent)
+
+JPG (white background)
+
+Custom color background
+
+Gradient background
+
+Blur background
+
+All rendered via Canvas.
+
+Component:
+DownloadPanel.jsx
+
+7.6 Manual Refine Brush
+
+Feature:
+
+Add area
+
+Remove area
+
+Adjustable brush size
+
+Zoom support
+
+Component:
+RefineBrush.jsx
+
+Massively improves perceived accuracy.
+
+8️⃣ Advanced Features (Phase 2)
+Batch Processing
+
+Web Workers
+
+2–3 parallel max
+
+Device RAM detection
+
+Background Templates
+
+Pre-bundled WebP:
+
+Studio
+
+Office
+
+Sky
+
+Abstract
+
+Gradient
+
+No server calls.
+
+Auto Shadow Generator
+
+Pipeline:
+
+Duplicate mask
+
+Fill black
+
+Gaussian blur
+
+Reduce opacity
+
+Perspective skew
+
+Professional look without AI.
+
+Lite Upscale Mode
+
+Instead of heavy Real-ESRGAN:
+
+Bicubic upscale
+
+Sharpen filter
+
+Contrast boost
+
+Optional desktop lazy-load for full ESRGAN.
+
+9️⃣ Performance Strategy
+
+Device detection:
+
+WebGPU support
+
+RAM
+
+Mobile vs desktop
+
+If low-end:
+
+Enable Lite Mode:
+
+Lower resolution
+
+Disable upscale
+
+Reduce animations
+
+Goal:
+Fastest background remover online.
+
+🔟 Design System
+Color Rule
+
+Primary: #334155
+Dark Base: #0B0F19
+Accent: #F59E0B
+
+60% dark
+30% white
+10% accent
+
+Professional SaaS aesthetic.
+
+11️⃣ Project Structure
+/src
+  /components
+    UploadCard.jsx
+    PreviewSplit.jsx
+    RefineBrush.jsx
+    DownloadPanel.jsx
+  /workers
+    bgRemovalWorker.js
+  /ai
+    u2net.onnx
+    modelLoader.js
+  /utils
+    imageProcessing.js
+  App.jsx
+
+
+AI strictly isolated in worker.
+
+12️⃣ UX Principles
+
+Zero lag
+
+Immediate feedback
+
+Smooth animations
+
+Minimal clicks
+
+Perceived intelligence
+
+Perceived quality > theoretical accuracy.
+
+13️⃣ Monetization Options (Future)
+
+Option A — Clean SaaS with Pro features
+Option B — Open-source + donation
+Option C — Free tool + ethical ads
+Option D — Hybrid (recommended)
+
+Best strategic combo:
+
+Open-source core
+Privacy-first branding
+Premium UI
+
+14️⃣ Competitive Advantage
+
+Compared to traditional background remover tools:
+
+No upload
+
+No watermark
+
+No subscription wall
+
+No API limit
+
+Faster first preview (WebGPU)
+
+Open-source transparency
+
+15️⃣ Portfolio Value (For You, Vaibhav)
+
+This project demonstrates:
+
+Client-side AI deployment
+
+ONNX Runtime integration
+
+WebGPU usage
+
+Performance optimization
+
+Applied ML engineering
+
+If you write:
+
+“Running U²-Net in Browser Using WebGPU — A Zero-Backend AI System”
+
+That’s Amazon-ready engineering storytelling.
+
+16️⃣ Deployment Plan
+
+Optimize ONNX model size
+
+Code-split runtime
+
+Lazy load model
+
+Deploy static to Cloudflare Pages
+
+Add sitemap.xml
+
+Add robots.txt
+
+Add structured schema
+
+17️⃣ Final Product Positioning
+
+CleanCut Studio is:
+
+A free AI background remover
+
+A privacy-first image editor
+
+A browser-based background remover
+
+An open-source AI tool
+
+A developer-grade AI showcase

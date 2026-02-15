@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CleanCut Studio | Private AI Background Remover</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#344256",
+                        "accent": "#F59E0B",
+                        "background-light": "#f6f7f7",
+                        "background-dark": "#0B0F19",
+                        "slate-card": "#161B26",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glow-effect:hover {
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+        }
+        .radial-bg {
+            background: radial-gradient(circle at center, rgba(52, 66, 86, 0.15) 0%, rgba(11, 15, 25, 0) 70%);
+        }
+        .mesh-gradient {
+            background-image: radial-gradient(at 0% 0%, hsla(217,32%,17%,1) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, hsla(215,25%,12%,1) 0, transparent 50%), 
+                              radial-gradient(at 100% 0%, hsla(38,92%,50%,0.05) 0, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen selection:bg-accent/30 selection:text-accent">
+<!-- Navigation -->
+<nav class="fixed top-0 w-full z-50 border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-background-dark text-xl">auto_fix_high</span>
+</div>
+<span class="text-xl font-bold tracking-tight">CleanCut<span class="text-accent">Studio</span></span>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 text-xs font-medium text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+                    WebGPU ACTIVE
+                </div>
+<a class="flex items-center gap-2 text-sm font-medium hover:text-accent transition-colors" href="#">
+<svg class="w-5 h-5 fill-current" viewbox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.43.372.823 1.102.823 2.222 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path></svg>
+                    GitHub
+                </a>
+</div>
+</div>
+</nav>
+<!-- Hero & Main Tool Section -->
+<main class="relative pt-32 pb-20 px-6 mesh-gradient overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full radial-bg pointer-events-none"></div>
+<div class="max-w-4xl mx-auto text-center relative z-10">
+<h1 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
+                Remove Background in Seconds — <span class="text-accent">100% Private</span>
+</h1>
+<p class="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto">
+                No images ever leave your device. Powered by WebGPU for lightning-fast, professional-grade processing entirely in your browser.
+            </p>
+<!-- Upload Zone -->
+<div class="relative group">
+<div class="absolute -inset-1 bg-gradient-to-r from-accent/20 to-primary/20 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+<div class="relative bg-white dark:bg-slate-card border-2 border-dashed border-primary/20 dark:border-primary/40 rounded-xl p-12 transition-all hover:border-accent/50 glow-effect">
+<div class="flex flex-col items-center justify-center gap-6">
+<!-- Icon Set -->
+<div class="flex gap-4 mb-2">
+<div class="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-accent">
+<span class="material-icons-round">lock</span>
+</div>
+<div class="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-accent">
+<span class="material-icons-round">bolt</span>
+</div>
+</div>
+<div class="space-y-2">
+<h3 class="text-2xl font-semibold">Drop image here</h3>
+<p class="text-slate-400 text-sm">Supports PNG, JPG, WEBP (up to 10MB)</p>
+</div>
+<button class="bg-accent hover:bg-amber-600 text-background-dark font-bold py-4 px-10 rounded-lg flex items-center gap-3 transition-all transform active:scale-95 shadow-lg shadow-accent/20">
+<span class="material-icons-round">upload_file</span>
+                            Upload Image
+                        </button>
+<div class="mt-4 flex items-center gap-4 text-xs text-slate-500 uppercase tracking-widest font-semibold">
+<span>No Cloud</span>
+<span class="w-1 h-1 bg-slate-500 rounded-full"></span>
+<span>No Limits</span>
+<span class="w-1 h-1 bg-slate-500 rounded-full"></span>
+<span>Zero Cost</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Samples / Social Proof -->
+<div class="mt-12 flex flex-col items-center">
+<p class="text-sm text-slate-500 mb-4 font-medium uppercase tracking-wider">No image? Try one of these:</p>
+<div class="flex gap-4">
+<button class="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2">
+<img alt="Sample portrait" class="w-full h-full object-cover" data-alt="Portrait of a woman for background removal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqPYcOk4mVfFz7nI71XrmEBEGuU1Q8VjtsI_X8TeT3JN7ntPY5JGBmeK4MBbnYS_qDcPJwUi4tzJTpt4wtg7NwfVT9djqHghMn22e2Y4JNDsaAmdd7EpZP5SAl8hn0imc9Ah7d0t-chubm6N61_j6nsvoYX80ghTy7-yEWaX6KAEfsGFSMzHyAH2hJqxGoisoqtjD2PsiBOWve0sF0d_XJF1F8Hws1kpdAmiQg_P3mdAZdAnqpwZ-73kNPw0f2w9WsGhkcVl0IN04"/>
+</button>
+<button class="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2">
+<img alt="Sample product" class="w-full h-full object-cover" data-alt="Headphones product shot for background removal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBW3vKSejvLVxPPI9qwcIV9zBB3SmAI9HxUDALskiuvzRGe12Zi9fKYXm5H_U1YXmCA2LdykNZ8LahQmW2E-GFsSMqbifPqeQ2AP3Beh68QlGCfFFAV8PVOa6mU2xiCpTrIGv9OGfAAwdkglCWr0NfSfVCj9dcLRqVC-lFoMzAS5uKDG0-JCfUlyb_SOeKYd5vZYNdasoc2bv6K2inINihyTByyvQ11qNefts8oSRZCTaFDBDd-DYz3tp1TxhRJOInY_38wSfMEzSs"/>
+</button>
+<button class="w-16 h-16 rounded-lg overflow-hidden border border-primary/30 hover:border-accent transition-all ring-accent/30 ring-offset-2 ring-offset-background-dark hover:ring-2">
+<img alt="Sample sneaker" class="w-full h-full object-cover" data-alt="Red sneaker shoe for background removal" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJpTkpH-wWuWwDirIhe8SUWEZr03lmol4Udt8rfpAm-c8FWcAwRPr36nZ1XoxvjJmWjgV5-AlVgnXGDkxCMJmY3HNzKqQFpKhw9MDkRmi2XJFePYgBL8XK5_5Y4JiqtLiTI0ciTUEnvUTn8WttG1q_f3jk2BsZbAiN_niXyeOfDRnBQ_guPoTFcGfkExTBp1icl7XDyYzKCfKUZKsNeAShTUhVbsSiNCSQ8dQefwyNa2p1oj720DoM8mwBrLrfzio69rvkL8K5Nys"/>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Features Section -->
+<section class="py-24 px-6 bg-background-light dark:bg-[#080B12]">
+<div class="max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="p-8 bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20 rounded-xl hover:bg-primary/20 transition-colors">
+<div class="text-accent mb-4">
+<span class="material-icons-round text-3xl">memory</span>
+</div>
+<h4 class="text-xl font-bold mb-3">WebGPU Accelerated</h4>
+<p class="text-slate-400 leading-relaxed">
+                        Harness the full power of your local GPU hardware for instant AI inference. Experience speed that rivals cloud solutions without the latency.
+                    </p>
+</div>
+<!-- Card 2 -->
+<div class="p-8 bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20 rounded-xl hover:bg-primary/20 transition-colors">
+<div class="text-accent mb-4">
+<span class="material-icons-round text-3xl">shield</span>
+</div>
+<h4 class="text-xl font-bold mb-3">100% Client-Side</h4>
+<p class="text-slate-400 leading-relaxed">
+                        Privacy is our priority. Your photos never touch a server. All processing happens locally in your browser session for maximum security.
+                    </p>
+</div>
+<!-- Card 3 -->
+<div class="p-8 bg-primary/5 dark:bg-primary/10 border border-primary/10 dark:border-primary/20 rounded-xl hover:bg-primary/20 transition-colors">
+<div class="text-accent mb-4">
+<span class="material-icons-round text-3xl">payments</span>
+</div>
+<h4 class="text-xl font-bold mb-3">Zero Cost Forever</h4>
+<p class="text-slate-400 leading-relaxed">
+                        No subscriptions, no credits, no watermarks. Since we don't pay for server compute, you don't pay for the service. Completely free.
+                    </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Tech Footer -->
+<footer class="py-12 px-6 border-t border-primary/10 bg-background-light dark:bg-background-dark text-slate-500">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-4">
+<span class="text-sm font-medium">CleanCut Studio v1.0.4</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span class="text-sm">Built with WebGPU &amp; Transformers.js</span>
+</div>
+<div class="flex gap-8 text-sm">
+<a class="hover:text-accent transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-accent transition-colors" href="#">Terms of Use</a>
+<a class="hover:text-accent transition-colors" href="#">API Support</a>
+</div>
+<div class="flex items-center gap-2 opacity-60 grayscale">
+<span class="text-xs font-bold tracking-tighter uppercase">Supported By</span>
+<div class="flex gap-4">
+<span class="text-sm font-extrabold italic">CHROMIUM</span>
+<span class="text-sm font-extrabold italic">FIREFOX</span>
+<span class="text-sm font-extrabold italic">SAFARI</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- Processing Overlay (Hidden by default) -->
+<div class="hidden fixed inset-0 z-[60] bg-background-dark/95 flex flex-col items-center justify-center p-6 text-center" id="processing-layer">
+<div class="w-full max-w-md">
+<div class="mb-8">
+<div class="w-20 h-20 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-icons-round text-4xl text-accent animate-pulse">biotech</span>
+</div>
+<h3 class="text-2xl font-bold mb-2">Analyzing Image...</h3>
+<p class="text-slate-400">Running AI model locally via WebGPU</p>
+</div>
+<div class="w-full bg-primary/20 h-2 rounded-full overflow-hidden">
+<div class="bg-accent h-full w-[65%] rounded-full shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>
+</div>
+<div class="mt-4 flex justify-between text-xs font-mono text-accent">
+<span>SEGMENTING_OBJECT</span>
+<span>65%</span>
+</div>
+</div>
+</div>
+</body></html>

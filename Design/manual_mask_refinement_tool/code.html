@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manual Mask Refinement - CleanCut Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#344256",
+                        "background-light": "#f6f7f7",
+                        "background-dark": "#16191c",
+                        "mask-red": "rgba(255, 77, 77, 0.45)",
+                        "brush-border": "rgba(255, 255, 255, 0.8)",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+        .canvas-checkerboard {
+            background-image: conic-gradient(#1e2329 90deg, #16191c 90deg 180deg, #1e2329 180deg 270deg, #16191c 270deg);
+            background-size: 20px 20px;
+        }
+        .mask-overlay {
+            mix-blend-mode: multiply;
+        }
+        input[type='range'] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type='range']::-webkit-slider-runnable-track {
+            background: #2d3748;
+            height: 4px;
+            border-radius: 2px;
+        }
+        input[type='range']::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            background: #f6f7f7;
+            border-radius: 50%;
+            margin-top: -6px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-200 font-display h-screen flex flex-col select-none">
+<!-- Top Navigation Header -->
+<header class="h-14 border-b border-white/5 bg-primary dark:bg-primary/40 backdrop-blur-md px-4 flex items-center justify-between z-50">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-blue-400">auto_fix_high</span>
+<h1 class="font-semibold text-sm tracking-tight">Refine Edge <span class="text-white/40 font-normal ml-2">Manual Mode</span></h1>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+<span class="material-icons-round text-[10px] text-emerald-400">shield</span>
+<span class="text-[10px] uppercase tracking-wider font-bold text-white/60">Privacy Protected: WebGPU Local</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-1.5 text-xs font-medium text-white/70 hover:text-white transition-colors">Cancel</button>
+<button class="px-5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow-lg shadow-blue-900/20 transition-all">Done</button>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 relative overflow-hidden flex items-center justify-center canvas-checkerboard">
+<!-- Zoomed-in Image with Mask Overlay -->
+<div class="relative max-w-4xl w-full h-[80vh] flex items-center justify-center transform scale-150">
+<div class="relative shadow-2xl border border-white/5">
+<img class="max-h-[70vh] w-auto" data-alt="Close up portrait of a woman with complex hair detail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAh1ITefqXNv-bmwaEzrJzdXoMxDueU2TgmN2fgViZ_u7D_QBf9-My9a27zdBnE3N5KVs2VEItaF8txhVs8hH1tzdVc8lRxlQWUHVjhq_DYRbpWacAiL_G5_IOqETKfkCswzNanD764dOQOBZUgfeZFjboXKfZGS4ncWOvRNkbq4vLoN7CyoXXJdwDYpKR5pOSr3F7VBugnjtlKp9WNlUeSJd3tC6Xok4zthdSlK4WedlXocs6VmpDvGqnoaI3RytsaSMjZ5LVeAZM"/>
+<!-- SVG Mask Overlay (Simulated) -->
+<div class="absolute inset-0 mask-overlay">
+<svg class="w-full h-full" preserveaspectratio="none">
+<!-- Simulated mask areas -->
+<rect fill="#FF4D4D" fill-opacity="0.45" height="100%" width="100%" x="0" y="0"></rect>
+<!-- Cutout area simulation -->
+<circle cx="50%" cy="40%" fill="white" fill-opacity="1" r="35%" style="mix-blend-mode: destination-out;"></circle>
+</svg>
+</div>
+<!-- Custom Brush Cursor (SVG simulation) -->
+<div class="absolute top-1/2 left-1/3 w-12 h-12 -ml-6 -mt-6 border border-brush-border rounded-full flex items-center justify-center pointer-events-none z-10">
+<span class="material-icons-round text-[14px] text-white">add</span>
+</div>
+</div>
+</div>
+<!-- Toolbars & Overlays -->
+<!-- Tool Controls (Left) -->
+<div class="absolute left-6 top-1/2 -translate-y-1/2 flex flex-col gap-4">
+<div class="bg-primary/90 backdrop-blur-xl border border-white/10 p-2 rounded-xl shadow-2xl flex flex-col gap-2">
+<button class="w-12 h-12 flex items-center justify-center rounded-lg bg-blue-600 text-white shadow-inner" title="Restore (B)">
+<span class="material-icons-round">brush</span>
+<span class="absolute -bottom-1 -right-1 bg-emerald-500 w-4 h-4 rounded-full border-2 border-primary text-[10px] flex items-center justify-center">+</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/60 transition-colors" title="Erase (E)">
+<span class="material-icons-round">auto_fix_normal</span>
+<span class="absolute -bottom-1 -right-1 bg-red-500 w-4 h-4 rounded-full border-2 border-primary text-[10px] flex items-center justify-center">-</span>
+</button>
+<div class="h-px bg-white/10 mx-2 my-1"></div>
+<button class="w-12 h-12 flex items-center justify-center rounded-lg hover:bg-white/5 text-white/60 transition-colors" title="Pan (H)">
+<span class="material-icons-round text-xl">pan_tool</span>
+</button>
+</div>
+<!-- Brush Settings Sidebar (Horizontal layout relative to icons) -->
+<div class="bg-primary/90 backdrop-blur-xl border border-white/10 p-4 rounded-xl shadow-2xl w-48">
+<div class="flex items-center justify-between mb-3">
+<span class="text-[10px] uppercase font-bold text-white/40 tracking-widest">Brush Settings</span>
+<span class="text-[11px] font-mono text-blue-400">48px</span>
+</div>
+<div class="space-y-4">
+<div class="space-y-1">
+<div class="flex justify-between items-center mb-1">
+<label class="text-[10px] text-white/60">Size</label>
+<span class="text-[10px] text-white/30 text-xs">[ / ]</span>
+</div>
+<input class="w-full" max="100" min="1" type="range" value="48"/>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] text-white/60">Hardness</label>
+<input class="w-full" max="100" min="0" type="range" value="75"/>
+</div>
+<div class="pt-2 flex items-center justify-between">
+<label class="text-[10px] text-white/60">Overlay Opacity</label>
+<button class="text-white/40 hover:text-white transition-colors">
+<span class="material-icons-round text-sm">visibility</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Zoom Control (Bottom Right) -->
+<div class="absolute right-6 bottom-6 flex items-center gap-2 bg-primary/90 backdrop-blur-xl border border-white/10 px-3 py-2 rounded-lg shadow-2xl">
+<button class="text-white/60 hover:text-white transition-colors">
+<span class="material-icons-round text-lg">zoom_out</span>
+</button>
+<span class="text-[11px] font-mono w-12 text-center text-white/80">250%</span>
+<button class="text-white/60 hover:text-white transition-colors">
+<span class="material-icons-round text-lg">zoom_in</span>
+</button>
+<div class="w-px h-4 bg-white/10 mx-1"></div>
+<button class="text-white/60 hover:text-white transition-colors" title="Fit Screen">
+<span class="material-icons-round text-lg">fullscreen</span>
+</button>
+</div>
+<!-- Helper Tooltip (Bottom Center) -->
+<div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-background-dark/80 backdrop-blur-md px-4 py-2 border border-white/10 rounded-full">
+<div class="flex items-center gap-2 text-[11px] text-white/50">
+<kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 text-white/80">Space</kbd>
+<span>Pan</span>
+</div>
+<div class="w-1.5 h-1.5 rounded-full bg-white/10"></div>
+<div class="flex items-center gap-2 text-[11px] text-white/50">
+<kbd class="px-1.5 py-0.5 rounded bg-white/10 border border-white/10 text-white/80">Ctrl</kbd>
+<span>+ Scroll Zoom</span>
+</div>
+</div>
+</main>
+<!-- Footer Status -->
+<footer class="h-8 bg-background-dark border-t border-white/5 px-4 flex items-center justify-between text-[10px] text-white/40 font-medium uppercase tracking-widest">
+<div class="flex items-center gap-4">
+<span>Canvas: 3200 x 4800 px</span>
+<span>Layer: AI Mask 01</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span>WebGPU Active (0.4ms lat.)</span>
+</div>
+</footer>
+</body></html>
