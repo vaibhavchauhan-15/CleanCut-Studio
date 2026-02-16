@@ -137,7 +137,75 @@ CleanCut Studio uses the U²-Net model for background removal. You need to downl
 
 ## 📦 Deployment
 
-### Cloudflare Pages (Recommended)
+### Vercel (Recommended) 🚀
+
+CleanCut Studio is optimized for Vercel deployment with zero configuration needed:
+
+#### Method 1: GitHub Integration (Easiest)
+
+1. Push your code to a GitHub repository
+2. Go to [Vercel Dashboard](https://vercel.com/new)
+3. Click "Import Project" and select your GitHub repository
+4. Vercel will auto-detect the Vite framework
+5. Click "Deploy" - no configuration needed!
+
+#### Method 2: Vercel CLI
+
+```bash
+# Install Vercel CLI globally
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy to production
+vercel --prod
+```
+
+#### Method 3: Manual Deployment
+
+```bash
+# Build the project
+npm run build
+
+# Deploy the dist folder
+vercel --prod ./dist
+```
+
+**Configuration**: The project includes a `vercel.json` file with optimized settings for:
+- Cross-Origin headers for WebGPU/SharedArrayBuffer support
+- SPA routing fallback
+- Proper CORS configuration
+
+**Custom Domain**: After deployment, you can add a custom domain in the Vercel dashboard under "Domains".
+
+---
+
+### Netlify
+
+```bash
+# Build command
+npm run build
+
+# Publish directory
+dist
+
+# Environment variables (none required)
+```
+
+**Note**: You may need to add custom headers for WebGPU support in `netlify.toml`:
+
+```toml
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Embedder-Policy = "require-corp"
+```
+
+---
+
+### Cloudflare Pages
 
 ```bash
 # Build the project
@@ -148,15 +216,29 @@ npm run build
 npx wrangler pages deploy dist
 ```
 
-### Netlify / Vercel
+**Note**: Cloudflare Pages automatically handles static site hosting. No additional configuration required.
 
-```bash
-# Build command
-npm run build
+---
 
-# Publish directory
-dist
+### Self-Hosting (Docker)
+
+```dockerfile
+# Dockerfile example
+FROM node:18-alpine as builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 ```
+
+**Important**: Ensure your web server sends the required COOP/COEP headers for WebGPU support.
 
 ## 🔐 Privacy & Security
 

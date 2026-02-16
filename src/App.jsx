@@ -1,8 +1,9 @@
 /**
- * Main App Component - Refactored
- * Clean, organized structure with separated concerns
+ * Main App Component - Optimized
+ * Lazy loading for better performance
  */
 
+import { lazy, Suspense } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { ImageProvider } from './contexts/ImageContext';
 import { useImageContext } from './contexts/useImageContext';
@@ -10,22 +11,27 @@ import { useWebGPU } from './hooks/useWebGPU';
 import { useImageExport } from './hooks/useImageExport';
 import { useZoomPan } from './hooks/useZoomPan';
 
-// Layout Components
+// Critical components (loaded immediately)
 import Navigation from './components/layout/Navigation';
-import Footer from './components/layout/Footer';
-import FeaturesSection from './components/layout/FeaturesSection';
-
-// View Components
 import UploadCard from './components/UploadCard';
-import PreviewSplit from './components/PreviewSplit';
-import ProcessingOverlay from './components/ProcessingOverlay';
-import DownloadPanel from './components/DownloadPanel';
-import RefineBrush from './components/RefineBrush';
 
-// Editor Components
-import ZoomControls from './components/editor/ZoomControls';
+// Lazy loaded components (loaded on demand)
+const Footer = lazy(() => import('./components/layout/Footer'));
+const FeaturesSection = lazy(() => import('./components/layout/FeaturesSection'));
+const PreviewSplit = lazy(() => import('./components/PreviewSplit'));
+const ProcessingOverlay = lazy(() => import('./components/ProcessingOverlay'));
+const DownloadPanel = lazy(() => import('./components/DownloadPanel'));
+const RefineBrush = lazy(() => import('./components/RefineBrush'));
+const ZoomControls = lazy(() => import('./components/editor/ZoomControls'));
 
 import { VIEW_MODES, ZOOM_CONFIG } from './config/constants';
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center p-4">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+  </div>
+);
 
 // Main App Content (uses context)
 const AppContent = () => {
@@ -62,7 +68,9 @@ const AppContent = () => {
           <div className="pt-32 pb-20 px-6 mesh-gradient overflow-hidden min-h-screen">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full radial-bg pointer-events-none"></div>
             <UploadCard />
-            <FeaturesSection />
+            <Suspense fallback={<LoadingFallback />}>
+              <FeaturesSection />
+            </Suspense>
           </div>
         )}
 
@@ -71,22 +79,26 @@ const AppContent = () => {
           <div className="min-h-screen bg-neutral-900 flex flex-col pt-16">
             <div className="flex-1 flex justify-center items-start gap-8 px-8 py-10 max-w-[1600px] mx-auto w-full">
               <section className="flex-1 flex flex-col items-center justify-start space-y-6">
-                <PreviewSplit />
+                <Suspense fallback={<LoadingFallback />}>
+                  <PreviewSplit />
 
-                {/* Canvas Zoom/Pan Controls */}
-                <ZoomControls
-                  zoomLevel={zoomLevel}
-                  onZoomIn={handleZoomIn}
-                  onZoomOut={handleZoomOut}
-                  onZoomReset={handleZoomReset}
-                  minZoom={ZOOM_CONFIG.min}
-                  maxZoom={ZOOM_CONFIG.max}
-                />
+                  {/* Canvas Zoom/Pan Controls */}
+                  <ZoomControls
+                    zoomLevel={zoomLevel}
+                    onZoomIn={handleZoomIn}
+                    onZoomOut={handleZoomOut}
+                    onZoomReset={handleZoomReset}
+                    minZoom={ZOOM_CONFIG.min}
+                    maxZoom={ZOOM_CONFIG.max}
+                  />
+                </Suspense>
               </section>
 
               {/* Right Side Panel */}
               <aside className="w-[380px] shrink-0">
-                <DownloadPanel />
+                <Suspense fallback={<LoadingFallback />}>
+                  <DownloadPanel />
+                </Suspense>
               </aside>
             </div>
 
@@ -117,7 +129,9 @@ const AppContent = () => {
         {/* Refine View */}
         {view === VIEW_MODES.REFINE && (
           <div className="h-screen flex flex-col overflow-hidden pt-16">
-            <RefineBrush maskData={maskData} onMaskUpdate={setMaskData} />
+            <Suspense fallback={<LoadingFallback />}>
+              <RefineBrush maskData={maskData} onMaskUpdate={setMaskData} />
+            </Suspense>
           </div>
         )}
       </main>
@@ -125,12 +139,18 @@ const AppContent = () => {
       {/* Processing Overlay */}
       <AnimatePresence>
         {view === VIEW_MODES.PROCESSING && (
-          <ProcessingOverlay progress={processingProgress} stage={processingStage} />
+          <Suspense fallback={null}>
+            <ProcessingOverlay progress={processingProgress} stage={processingStage} />
+          </Suspense>
         )}
       </AnimatePresence>
 
       {/* Footer */}
-      {view === VIEW_MODES.UPLOAD && <Footer />}
+      {view === VIEW_MODES.UPLOAD && (
+        <Suspense fallback={<LoadingFallback />}>
+          <Footer />
+        </Suspense>
+      )}
     </div>
   );
 };

@@ -153,6 +153,21 @@ const PreviewSplit = () => {
     }
   }, [zoomLevel]);
 
+  // Attach wheel and touch event listeners with { passive: false }
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Add wheel event listener with passive: false
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('touchstart', handlePanStart, { passive: false });
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('touchstart', handlePanStart);
+    };
+  }, [handleWheel, handlePanStart]);
+
   // Cleanup RAF on unmount
   useEffect(() => {
     return () => {
@@ -201,13 +216,7 @@ const PreviewSplit = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        onWheel={handleWheel}
         onMouseDown={(e) => {
-          if (!e.target.closest('.zoom-slider-handle')) {
-            handlePanStart(e);
-          }
-        }}
-        onTouchStart={(e) => {
           if (!e.target.closest('.zoom-slider-handle')) {
             handlePanStart(e);
           }
